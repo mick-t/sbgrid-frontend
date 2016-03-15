@@ -1,0 +1,27 @@
+# ignore our secrets files!
+secrets.yml
+# ignore other types of secrets files:
+*.secrets
+# Eclipse/PyDev stuff...
+.project
+.pydevproject
+# Emacs backup files...
+*~
+.\#*
+\#*
+# Mac OS X stuff...
+.DS_Store
+# Vim swap files
+*.swp
+*.swo
+# ignore all pems files!
+*.pem
+hostcert.pem
+hostkey.pem
+collector-hostcert.pem
+collector-hostkey.pem
+schedd-hostcert.pem
+schedd-hostkey.pem
+
+#from the submodule stuff
+ansible/

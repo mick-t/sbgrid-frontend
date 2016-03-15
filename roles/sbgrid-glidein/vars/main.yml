@@ -1,0 +1,6 @@
+---
+# file: roles/sbgrid-glidein/vars/main.yml
+#
+
+# The year! Assumes all your certs are in particular format that include the year. See glidein.yml.
+cert_file_year: 2015

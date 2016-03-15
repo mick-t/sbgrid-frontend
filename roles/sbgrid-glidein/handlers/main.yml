@@ -1,0 +1,55 @@
+---
+# file: roles/sbgrid-glidein/handlers/main.yml
+#
+# Note: the notify signal is produced only if the task introduces a
+#  change, which means if nothing has changed, the handler will NOT be
+#  called.
+# 
+# Note: Handlers are run in the order they are listed, not in the order that they are notified.
+
+- name: reloaded autofs
+  service: name=autofs state=reloaded
+
+- name: restart autofs
+  service: name=autofs state=restarted
+  
+- name: reloaded network
+  service: name=network state=reloaded
+
+- name: enabled fetch-crl-cron
+  service: name=fetch-crl-cron enabled=yes
+
+- name: reloaded fetch-crl-cron
+  service: name=fetch-crl-cron state=reloaded
+
+- name: restart fetch-crl-cron
+  service: name=fetch-crl-cron state=restarted
+
+- name: running sssd
+  service: name=sssd state=running
+  
+- name: reloaded sssd
+  service: name=sssd state=reloaded
+
+- name: restart sssd
+  service: name=autofs state=restarted
+
+- name: enable smartd
+  service: name=smartd state=started enabled=yes
+
+# custom handler as ansible doens't like reconfig
+- name: reconfig frontend
+  action: command /sbin/service gwms-frontend reconfig
+#  service: name=gwms-frontend arguments=reconfig enabled=yes
+
+# custom handler as ansible doens't like reconfig
+- name: restart frontend
+  service: name=gwms-frontend  state=restarted enabled=yes
+
+# custom handler - restart condor
+- name: restart condor
+  service: name=condor  state=restarted enabled=yes
+
+# custom handler - gratia-probes-cron
+- name: enabled gratia-probes-cron
+  service: name=gratia-probes-cron state=reloaded enabled=yes

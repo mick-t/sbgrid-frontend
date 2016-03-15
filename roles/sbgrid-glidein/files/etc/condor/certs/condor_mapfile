@@ -1,0 +1,8 @@
+GSI "^\/DC\=com\/DC\=DigiCert\-Grid\/O\=Open\ Science\ Grid\/OU\=Services\/CN\=collector\/glidein\-1\.sbgrid\.org$" collector
+GSI "^\/DC\=com\/DC\=DigiCert\-Grid\/O\=Open\ Science\ Grid\/OU\=Services\/CN\=glidein\-1\.sbgrid\.org$" condor
+GSI "^\/DC\=org\/DC\=doegrids\/OU\=Services\/CN\=gfactory\-1\.t2\.ucsd\.edu$" factory
+GSI "^\/DC\=com\/DC\=DigiCert\-Grid\/O\=Open\ Science\ Grid\/OU\=Services\/CN\=glidein\-1\.sbgrid\.org$" frontend
+GSI "^\/DC\=com\/DC\=DigiCert\-Grid\/O\=Open\ Science\ Grid\/OU\=Services\/CN\=schedd\/glidein\-1\.sbgrid\.org$" schedd
+GSI "^\/DC\=com\/DC\=DigiCert\-Grid\/O\=Open\ Science\ Grid\/OU\=People\/CN\=Michael\ Timony\ \(Portal\)\ 888$" webportal
+GSI (.*) anonymous
+FS (.*) \1

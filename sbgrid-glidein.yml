@@ -1,0 +1,39 @@
+---
+# Install and configure a Centos server to work as a SBGrid Glidin server.
+# Specify the hostname using: --extra-vars "target=HOSTNAME". 
+# For Example:
+# ansible-playbook sbgrid-glidein.yml --extra-vars "target=sbgrid-glidein1.in.hwlab" -i osg.hostlist
+
+# To run this playbook on a new server you will need to update:
+# templates/sysconfig/network-scripts/ifcfg-eth0.1 with the external hostname for the glidein server
+# TODO: better way to specify the external hostname?
+# TODO: mkdir ~frontend/.globus for host certs/; /var/lib/gwms-frontend/.globus/; chown -R frontend:root /var/lib/gwms-frontend/.globus/;
+# TODO: ansible this:
+# voms-proxy-init -debug -cert /etc/grid-security/frontend/frontend-hostcert.pem -key /etc/grid-security/frontend/frontend-hostkey.pem -voms SBGrid -valid 240:00 -out /var/lib/gwms-frontend/.globus/x509up_u1018; chown frontend:root /var/lib/gwms-frontend/.globus/x509up_u1018;
+# TODO: copy condor_mapfile to /etc/condor/certs/
+# TODO: to config ganglia: " ERROR "Neither gmetric nor libganglia were successfully initialized.  Aborting" at line 172 in file /builddir/build/BUILD/condor-8.2.8/src/gangliad/gangliad.cpp"
+
+
+# 
+- name: "Install & Configure Glidein and other OSG applications"
+  user: root
+  gather_facts: yes
+  hosts: 
+    - '{{ target }}'
+  roles:
+    - common
+    - common-server
+    - consortium-sssd-client
+    - sbgrid-glidein
+  vars:
+    ipaserver: sbgrid-directory.in.hwlab
+    ipadomain: in.hwlab
+    iparealm: SBGRID.ORG
+  vars_prompt:
+    - name: "ipa_admin_user"
+      prompt: "You need IPA Host Administrator credentials to run this role. Enter a host admin account username"
+      private: no
+    - name: "ipa_admin_password"
+      prompt: "Enter the host admin account password"
+      private: yes
+      

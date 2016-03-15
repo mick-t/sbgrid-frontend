@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# using host cert for both Frontend and pilot
+voms-proxy-init -debug -cert /etc/grid-security/hostcert.pem -key /etc/grid-security/hostkey.pem -voms SBGrid -valid 240:00 -out /var/lib/gwms-frontend/.globus/x509up_u1018; 
+chown frontend:root /var/lib/gwms-frontend/.globus/x509up_u1018
+
+# this is what UCSD does:
+#voms-proxy-init -cert /etc/grid-security/hostcert.pem -key /etc/grid-security/hostkey.pem -out /tmp/proxy.new -hours 72 -voms osg:/osg/ligo && \
+#chown frontend:frontend /tmp/proxy.new && \
+#mv /tmp/proxy.new /tmp/vo_proxy

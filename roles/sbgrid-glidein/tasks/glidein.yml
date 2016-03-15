@@ -1,0 +1,130 @@
+---
+# file: roles/sbgrid-glidein/tasks/glidein.yml
+#
+# Install Glideinwmw, Condor and deploy configuration files
+
+# install glideiwms, condor, gratia,  etc
+- name: "glideinwms-install: Install Glideinwms, Condori, Gratia ..."
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  tags:
+    - glideinwms-install
+  with_items:
+    - glideinwms-vofrontend
+    - condor
+    - gratia-probe-condor
+
+# comment out LOCAL_CONFIG_FILE in condor_config
+- name: "remove-local-config-file: comment out LOCAL_CONFIG_FILE in condor_config"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  replace: dest=/etc/condor/condor_config regexp="^LOCAL_CONFIG_FILE = /etc/condor/condor_config.local" replace="#LOCAL_CONFIG_FILE = /etc/condor/condor_config.local" backup=yes
+  tags: remove-local-config-file
+
+# add noerror to fetch-crl cron job
+- name: "noerror-fetch-crl:  add noerror to fetch-crl cron job"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  lineinfile: dest=/etc/fetch-crl.conf line="noerrors"
+  tags: noerror-fetch-crl
+    
+# TODO: redo these, or maybe we need to remove them.
+# copy ssl certs. These should NOT added to Git as that's a security breach and someone could impersonate our server
+- name: "copy-x509-certs|host-cert: You need to retrieve these from Dropbox by hand and copy them to ansible/roles/sbgrid-glidein/files/etc/grid-security, DO NOT ADD THESE TO GIT"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/grid-security/{{cert_file_year}}-glidein-1-hostcert.pem dest=/etc/grid-security/{{cert_file_year}}-glidein-1-hostcert.pem mode=640 owner=root
+  tags:
+    - copy-x509-certs
+    - host-cert
+
+# TODO: redo these, or maybe we need to remove them.
+# copy ssl certs. These should NOT added to Git as that's a security breach and someone could impersonate our server
+- name: "copy-x509-certs|host-cert: You need to retrieve these from Dropbox by hand and copy them to ansible/roles/sbgrid-glidein/files/etc/grid-security, DO NOT ADD THESE TO GIT"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/grid-security/{{cert_file_year}}-glidein-1-hostkey.pem dest=/etc/grid-security/{{cert_file_year}}-glidein-1-hostkey.pem mode=600 owner=root
+  tags:
+    - copy-x509-certs
+    - host-cert
+
+# synlink the host's certs
+- name: "copy-x509-certs|host-cert: Synlink the host's certs"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  file: src=/etc/grid-security/{{cert_file_year}}-glidein-1-hostcert.pem  dest=/etc/grid-security/hostcert.pem owner=root group=root state=link force=yes
+  tags:
+    - copy-x509-certs
+    - host-cert    
+
+# synlink the host's certs
+- name: "copy-x509-certs|host-cert: Synlink the host's certs"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  file: src=/etc/grid-security/{{cert_file_year}}-glidein-1-hostkey.pem dest=/etc/grid-security/hostkey.pem owner=root group=root state=link force=yes
+  tags:
+    - copy-x509-certs
+    - host-cert
+    
+- name: "grid-directories: Assures /etc/grid-security/SomeDirectory exists"
+  file: dest=/etc/grid-security/{{ item }} state=directory
+  with_items:
+    - collector
+    - frontend
+    - schedd
+  tags:
+    - copy-x509-certs
+    - grid-directories
+
+# TODO: replace next two tasks with with_items and a loop.
+# copy ssl certs. These should NOT added to Git as that's a security breach and someone could impersonate our server. Frontend uses the host's cert!
+- name: "copy-x509-certs|frontend-cert: Synlink the host's certs for use by the frontend."
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  file: src=/etc/grid-security/{{cert_file_year}}-glidein-1-hostkey.pem dest=/etc/grid-security/frontend/frontend-hostkey.pem owner=root group=condor state=link force=yes
+  tags:
+    - copy-x509-certs
+    - frontend-cert
+
+# copy ssl certs. These should NOT added to Git as that's a security breach and someone could impersonate our server. Frontend uses the host's cert!
+- name: "copy-x509-certs|frontend-cert: Synlink the host's certs for use by the frontend."
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  #TODO: replace with with_items and a loop.
+  file: src=/etc/grid-security/{{cert_file_year}}-glidein-1-hostcert.pem dest=/etc/grid-security/frontend/frontend-hostcert.pem owner=root group=condor state=link force=yes
+  tags:
+    - copy-x509-certs
+    - frontend-cert
+
+# copy the frontend config, and backup the existing copy!
+- name: "frontend-config: Copy Glidein Frontend Config"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")  
+  copy: src=etc/gwms-frontend/frontend.xml dest=/etc/gwms-frontend/frontend.xml  owner=frontend group=condor force=yes backup=yes
+  tags: frontend-config
+  notify:
+    - reconfig frontend
+    - restart frontend
+
+# copy the SBGrid condor custom config file
+- name: "condor-config: Copy condor 99_local_tweaks.config"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")  
+  copy: src=etc/condor/config.d/99_local_tweaks.config dest=/etc/condor/config.d/99_local_tweaks.config owner=root group=root force=yes backup=yes
+  tags: condor-config
+
+# add the DN to trust the glidein pilot, schedd and frontend
+# This will automatically add the correctly escaped line in /etc/condor/certs/condor_mapfile
+# and will define GSI_DAEMON_NAME in /etc/condor/config.d/90_gwms_dns.config
+- name: "glidecondor_addDN: add the DN to trust the glidein pilot, schedd and frontend"
+  action: command glidecondor_addDN -daemon 'Trust my own DN' '/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org' condor
+  tags: glidecondor-addDN
+
+# copy refresh_proxy that update the frontend and pilot proxy cert
+- name: "refresh-proxy: Copy refresh_proxy script"
+  copy: src=usr/local/sbin/refresh_proxy dest=/usr/local/sbin/refresh_proxy owner=root group=root force=yes mode=751 backup=no # we don't what backups cluttering up a bin directory
+  tags: refresh-proxy
+
+# copy refresh_proxy cron job that updates the frontend and pilot proxy cert
+- name: "refresh-proxy: Copy refresh_proxy cron job"
+  copy: src=etc/cron.d/refresh_proxy.cron dest=/etc/cron.d/refresh_proxy.cron owner=root group=root force=yes backup=no # we don't what backups cluttering up a cron directory
+  tags: refresh-proxy
+
+# copy the gratia ProbeConfig, and backup the existing copy!
+- name: "gratia-probe-config: Copy gratia ProbeConfig"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/gratia/condor/ProbeConfig dest=/etc/gratia/condor/ProbeConfig owner=root group=root force=yes backup=yes
+  tags: gratia-ProbeConfig
+  notify:
+    - enabled gratia-probes-cron
+    - restart condor

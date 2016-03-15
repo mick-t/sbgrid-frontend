@@ -1,0 +1,59 @@
+---
+# file: roles/sbgrid-glidein/tasks/filesystems.yml
+#
+# install autofs and setup automounts
+
+# install autofs, ipa, sssd etc.
+- name: "file-tools: Autofs, ipa, sssd Install"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  with_items:
+    - autofs
+    - ipa-client
+    - sssd
+  tags:
+    - file-tools
+
+- name: "autofs-enable: Autofs enable service & start"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  service: name=autofs state=started enabled=yes
+  tags:
+    - autofs-enable
+    
+# copy autofs config files
+- name: "autofs-config: Autofs copy config files"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src={{ item }}  dest=/etc/ owner=root mode=644
+  with_fileglob:
+    - etc/auto.*
+  tags:
+    - autofs-configs
+  notify:
+    - reloaded autofs
+
+# copy krb5.conf  config file
+- name: "krb-config: sssd copy config files"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/krb5.conf  dest=/etc/krb5.conf owner=root mode=644 force=yes backup=yes
+  tags:
+    - krb-config
+    
+# copy sssd config file
+- name: "sssd-config: sssd copy config files"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/sssd/sssd.conf  dest=/etc/sssd/sssd.conf owner=root mode=600 force=yes backup=yes
+  tags:
+    - sssd-config
+  notify:
+    - running sssd
+    - reloaded sssd
+
+# copy ipa certificate file
+- name: "sssd-config: ipa cert file for sssd to work"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/ipa/ca.crt dest=/etc/ipa/ca.crt owner=root mode=600 force=yes backup=yes
+  tags:
+    - sssd-config
+  notify:
+    - running sssd
+    - reloaded sssd

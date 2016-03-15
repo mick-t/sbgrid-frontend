@@ -1,0 +1,97 @@
+---
+# file: roles/sbgrid-glidein/tasks/base.yml
+#
+
+# install base packages in case Justin really installed a barebones server (that doesn't have man etc);
+- name: "base-packages: Install basic pacakges such as man etc ..."
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  tags:
+    - base-packages
+  with_items:
+    - gcc
+    - git
+    - man
+    - python-virtualenvwrapper
+    - emacs-nox
+    - lsof
+    - unzip
+    
+# enable required repos and install required packages
+- name: "enable-epel: Downloading and enable the EPEL repository definitions"
+  #action: command rpm -Uvh --replacepkgs http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  yum: name=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+  tags:
+    - enable-epel
+
+# yum-priorities is required before we install the OSG repos
+- name: "yum-priorities: RHEL/CentOS : Install yum-priorities packages"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  tags:
+    - yum-priorities
+  with_items:
+    - yum-priorities
+
+# enable the software collections repo
+- name: "enable-sc: Enable the Software Collections Repo"
+  yum: name=centos-release-SCL state=latest
+  tags:
+    - enable-sc
+  with_items:
+   - centos-release-SCL
+
+# enable Python-2.7
+- name: "python27: enable-python-2.7"
+  yum: name={{ item }} state=latest
+  tags:
+    - python27
+  with_items:
+    - python27
+
+# enable the OSG repo
+- name: "enable-osg: Enable the OSG latest repository definition"
+  # OSG 3.1 support ends in April 2015. Using 3.2 instead.
+  # this is if you want the 3.1 version:
+  #action: command rpm -Uvh --replacepkgs http://repo.grid.iu.edu/osg-el6-release-latest.rpm
+  #yum: name=http://repo.grid.iu.edu/osg-el6-release-latest.rpm state=present
+  yum: name=http://repo.grid.iu.edu/osg/3.2/osg-3.2-el6-release-latest.rpm state=present
+  tags:
+    - enable-osg
+
+# install the OSG Certificate packages;
+- name: "osg-certs: RHEL/CentOS : Install OSG cert packages and enable cron job"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  tags:
+    - osg-certs
+    - enable-osg
+  with_items:
+    - fetch-crl
+    - osg-ca-certs
+    - osg-pki-tools
+  notify:
+    - enabled fetch-crl-cron
+    - reloaded fetch-crl-cron
+    
+# install other useful packages
+# dev packages (gcc-c++,  freetype-devel, libpng-devel)  are needed to install numpy, matplotlib into virtual env
+- name: "other-install: RHEL/CentOS : Install other useful packages"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  yum: name={{ item }} state=latest
+  tags:
+    - other-install
+  with_items:
+    - bind-utils
+    - emacs-nox
+    - freetype-devel
+    - ganglia
+    - gcc-c++
+    - libpng-devel
+    - telnet
+    - traceroute
+    - smartmontools
+    - yum-utils
+    - tmux
+  notify:
+    - enable smartd

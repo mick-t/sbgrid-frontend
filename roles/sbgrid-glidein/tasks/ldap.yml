@@ -1,0 +1,10 @@
+---
+# file: roles/sbgrid-glidein/tasks/nsswitch.yml
+#
+
+# copy nsswitch.conf
+- name: "nsswitch: sssd copy nsswitch.conf"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/nsswitch.conf  dest=/etc/nsswitch.conf owner=root mode=644 force=yes backup=yes
+  tags:
+    - nsswitch   

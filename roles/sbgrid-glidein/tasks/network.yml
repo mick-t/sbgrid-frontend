@@ -1,0 +1,24 @@
+---
+# file: roles/sbgrid-glidein/tasks/network.yml
+#
+# setup network config. You will need to edit this and the related
+# files if your new server is using a NIC other than eth1
+
+# enable external IP address: 
+# YOU NEED TO ADD ANY NEW IP ADDRESS's to  templates/etc/sysconfig/network-scripts/ifcfg-eth*
+# or create a new file.
+# Note: need to seperate ifcfg-eth files as we don't know if eth0/eth1 is used until the server is running. Is there a better way?
+- name: "external-ip: Enable External IP Address"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux" and ansible_hostname == "sbgrid-glidein1.in.hwlab" )
+  template: src=etc/sysconfig/network-scripts/ifcfg-eth1.1.j2 dest=/etc/sysconfig/network-scripts/ifcfg-eth1.1 owner=root group=root
+  tags:
+    - external-ip
+  notify: reloaded network
+
+# You will need to create a seperate task for a new host
+- name: "hostname: Set the external hostname so routing will work!"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux" and ansible_hostname == "sbgrid-glidein1.in.hwlab" )
+  hostname: name=glidein-1.sbgrid.org
+  tags:
+    - hostname
+  

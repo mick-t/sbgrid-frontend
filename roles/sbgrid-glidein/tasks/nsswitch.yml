@@ -1,0 +1,17 @@
+---
+# file: roles/sbgrid-glidein/tasks/ldap.yml
+#
+
+ # copy ldap files
+#- name: "ldap-config: LDAP copy config files"
+#  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+#  copy: src=etc/openldap/ldap.conf dest=/etc/openldap/ldap.conf owner=root group=root mode=644
+#  tags:
+#    - ldap-config
+
+# copy nsswitch.conf
+- name: "nsswitch: sssd copy nsswitch.conf"
+  when: (ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux")
+  copy: src=etc/nsswitch.conf  dest=/etc/nsswitch.conf owner=root mode=644 force=yes backup=yes
+  tags:
+    - nsswitch   

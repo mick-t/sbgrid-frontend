@@ -1,0 +1,11 @@
+---
+# file: roles/sbgrid-glidein/tasks/main.yml
+#
+
+# base install of packages and requirements.
+# this includes adding EPEL and OSG package repos
+- include: base.yml
+- include: network.yml
+- include: filesystems.yml
+- include: ldap.yml
+- include: glidein.yml
