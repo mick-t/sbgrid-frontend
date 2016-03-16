@@ -58,14 +58,14 @@
             <running_glideins_total curb="90000" max="100000"/>
           </config>
 	  <match match_expr="True" start_expr="TARGET.RequestGPUs &gt; 0"> 
-	    <factory query_expr='stringListMember("SBGridGPU", Glidein_Supported_VOs)'> 
+	    <factory query_expr='stringListMember("SBGridGPU", Glidein_Supported_VOs)'>
 	      <match_attrs> 
 		<match_attr name="GLIDEIN_Supported_VOs" type="string"/>
 	      </match_attrs> 
                <collectors>
                </collectors>
             </factory>
-            <job query_expr='(RequestGpus &gt;= 1)'>
+            <job query_expr='(RequestGpus=!= undefined &amp;&amp; RequestGpus &gt; 0)'>
                <match_attrs>
                </match_attrs>
                <schedds>
@@ -90,7 +90,7 @@
             <running_glideins_per_entry max="6000" relative_to_queue="1.10"/>
             <running_glideins_total curb="90000" max="100000"/>
          </config>
-         <match match_expr="True" start_expr="True">
+         <match match_expr='job.get("RequestGPUs", 1) == 0' start_expr="(isUndefined(RequestGPUs) || RequestGPUs == 0)"> <!-- if requestgpus is defined, dont' run on the main slot -->
 	     <factory query_expr='stringListMember("SBGrid", GLIDEIN_Supported_VOs)'>
                <match_attrs>
                   <match_attr name="GLIDEIN_Site" type="string"/>
@@ -98,7 +98,7 @@
                <collectors>
                </collectors>
             </factory>
-            <job query_expr="isUndefined(RequestGPUS)">
+            <job query_expr="isUndefined(RequestGPUS) || RequestGPUs == 0">
                <match_attrs>
                   <match_attr name="DESIRED_Sites" type="string"/>
                </match_attrs>
