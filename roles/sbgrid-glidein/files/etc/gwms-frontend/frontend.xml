@@ -1,7 +1,7 @@
 <frontend advertise_delay="5" advertise_with_multiple="True" advertise_with_tcp="True" frontend_monitor_index_page="False" frontend_name="glidein-1-sbgrid-org_OSG_gWMSFrontend" frontend_versioning="False" group_parallel_workers="2" loop_delay="60" restart_attempts="3" restart_interval="1800">
   <config>
-      <idle_vms_total curb="200" max="1000"/>
-      <idle_vms_total_global curb="200" max="1000"/>
+      <idle_vms_total curb="1000" max="4000"/>
+      <idle_vms_total_global curb="1000" max="4000"/>
       <running_glideins_total curb="90000" max="100000"/>
       <running_glideins_total_global curb="90000" max="100000"/>
   </config>
@@ -9,13 +9,14 @@
     <ha_frontends>
     </ha_frontends>
   </high_availability>
-   <log_retention>
+     <log_retention>
       <process_logs>
-         <process_log backup_count="5" compression="" extension="all" max_days="30.0" max_mbytes="256.0" min_days="3.0" msg_types="DEBUG,EXCEPTION,INFO,ERROR,ERR"/>
+         <process_log backup_count="5" compression="" extension="info" max_days="7.0" max_mbytes="100.0" min_days="3.0" msg_types="INFO"/>
+         <process_log backup_count="5" compression="" extension="err" max_days="7.0" max_mbytes="100.0" min_days="3.0" msg_types="ERR,WARN,EXCEPTION"/>
       </process_logs>
-   </log_retention>
+     </log_retention>
    <match match_expr="True" start_expr="True">
-      <factory query_expr='((stringListMember("SBGrid", GLIDEIN_Supported_VOs)))'>
+      <factory query_expr="True">
          <match_attrs>
          </match_attrs>
          <collectors>
@@ -56,21 +57,15 @@
             <running_glideins_per_entry max="1000" relative_to_queue="1.10"/>
             <running_glideins_total curb="90000" max="100000"/>
           </config>
-	  <!--
-         <match match_expr="True" start_expr="TARGET.RequiresWholeMachine">
-            <factory query_expr='(stringListMember("SBGridGPU", GLIDEIN_Supported_VOs))'>
-               <match_attrs>
-               </match_attrs>
-	  -->
-	  <match match_expr="'SBGridGPU' in glidein['attrs']['GLIDEIN_Supported_VOs']" start_expr="TARGET.RequiresWholeMachine"> 
-	    <factory query_expr='TRUE'> 
+	  <match match_expr="True" start_expr="TARGET.RequestGPUs &gt; 0"> 
+	    <factory query_expr='stringListMember("SBGridGPU", Glidein_Supported_VOs)'> 
 	      <match_attrs> 
 		<match_attr name="GLIDEIN_Supported_VOs" type="string"/>
 	      </match_attrs> 
                <collectors>
                </collectors>
             </factory>
-            <job query_expr="(RequestGpus &gt;= 1)&amp;&amp;(JobUniverse==5)&amp;&amp;(GLIDEIN_Is_Monitor =!= TRUE)&amp;&amp;(JOB_Is_Monitor =!= TRUE)">
+            <job query_expr='(RequestGpus &gt;= 1)'>
                <match_attrs>
                </match_attrs>
                <schedds>
@@ -84,29 +79,26 @@
          <attrs>
          </attrs>
          <files>
-            <file absfname="/storage/app/site/vofrontend/osg_glidein.sh" after_entry="True" const="True" executable="True" untar="False" wrapper="False">
-               <untar_options cond_attr="TRUE"/>
-            </file>
          </files>
      </group>
       <group name="main" enabled="True">
          <config>
             <idle_glideins_per_entry max="50" reserve="5"/>
             <idle_vms_per_entry curb="5" max="100"/>
-            <idle_vms_total curb="200" max="1000"/>
+            <idle_vms_total curb="1000" max="4000"/>
             <processing_workers matchmakers="3"/>
             <running_glideins_per_entry max="6000" relative_to_queue="1.10"/>
             <running_glideins_total curb="90000" max="100000"/>
          </config>
          <match match_expr="True" start_expr="True">
-            <factory query_expr="True">
+	     <factory query_expr='stringListMember("SBGrid", GLIDEIN_Supported_VOs)'>
                <match_attrs>
                   <match_attr name="GLIDEIN_Site" type="string"/>
                </match_attrs>
                <collectors>
                </collectors>
             </factory>
-            <job query_expr="True">
+            <job query_expr="isUndefined(RequestGPUS)">
                <match_attrs>
                   <match_attr name="DESIRED_Sites" type="string"/>
                </match_attrs>
@@ -121,9 +113,6 @@
          <attrs>
          </attrs>
          <files>
-            <file absfname="/storage/app/site/vofrontend/osg_glidein.sh" after_entry="True" const="True" executable="True" untar="False" wrapper="False">
-               <untar_options cond_attr="TRUE"/>
-            </file>
          </files>
       </group>
    </groups>
@@ -132,5 +121,8 @@
       <collector DN="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" group="default" node="134.174.140.230:9620-9660" secondary="True"/>
    </collectors>
    <files>
+     <file absfname="/storage/app/site/vofrontend/osg_glidein.sh" after_entry="True" const="True" executable="True" untar="False" wrapper="False">
+       <untar_options cond_attr="TRUE"/>
+     </file>
    </files>
 </frontend>
