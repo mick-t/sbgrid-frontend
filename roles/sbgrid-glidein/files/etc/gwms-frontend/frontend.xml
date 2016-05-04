@@ -28,16 +28,13 @@
          <match_attrs>
          </match_attrs>
          <schedds>
-            <schedd DN="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" fullname="glidein-1.sbgrid.org"/>
+            <schedd DN="/DC=org/DC=opensciencegrid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" fullname="glidein-1.sbgrid.org"/>
          </schedds>
       </job>
    </match>
    <monitor base_dir="/var/lib/gwms-frontend/web-area/monitor" flot_dir="/usr/share/javascriptrrd/flot" javascriptRRD_dir="/usr/share/javascriptrrd/js" jquery_dir="/usr/share/javascriptrrd/flot"/>
    <monitor_footer display_txt="" href_link=""/>
-   <security classad_proxy="/var/lib/gwms-frontend/.globus/x509up_u1018" proxy_DN="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" proxy_selection_plugin="ProxyAll" security_name="SBGrid" sym_key="aes_256_cbc">
-      <credentials>
-         <credential absfname="/var/lib/gwms-frontend/.globus/x509up_u1018" security_class="frontend" trust_domain="grid" type="grid_proxy"/>
-      </credentials>
+   <security classad_proxy="/var/lib/gwms-frontend/.globus/x509up_u1018" proxy_DN="/DC=org/DC=opensciencegrid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" proxy_selection_plugin="ProxyAll" security_name="SBGrid" sym_key="aes_256_cbc">
    </security>
    <stage base_dir="/var/lib/gwms-frontend/web-area/stage" use_symlink="True" web_base_url="http://glidein-1.sbgrid.org/vofrontend/stage"/>
    <work base_dir="/var/lib/gwms-frontend/vofrontend" base_log_dir="/var/log/gwms-frontend"/>
@@ -74,8 +71,9 @@
             </job>
          </match>
          <security>
-            <credentials>
-            </credentials>
+           <credentials>
+	     <credential absfname="/var/lib/gwms-frontend/.globus/x509up_u1018_pilot" security_class="frontend" trust_domain="grid" type="grid_proxy"/>
+           </credentials>
          </security>
          <attrs>
          </attrs>
@@ -108,7 +106,8 @@
             </job>
          </match>
          <security>
-            <credentials>
+           <credentials>
+	     <credential absfname="/var/lib/gwms-frontend/.globus/x509up_u1018_pilot" security_class="frontend" trust_domain="grid" type="grid_proxy"/>
             </credentials>
          </security>
          <attrs>
@@ -118,8 +117,8 @@
       </group>
    </groups>
    <collectors>
-      <collector DN="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" group="default" node="134.174.140.230:9618" secondary="False"/>
-      <collector DN="/DC=com/DC=DigiCert-Grid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" group="default" node="134.174.140.230:9620-9660" secondary="True"/>
+      <collector DN="/DC=org/DC=opensciencegrid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" group="default" node="134.174.140.230:9618" secondary="False"/>
+      <collector DN="/DC=org/DC=opensciencegrid/O=Open Science Grid/OU=Services/CN=glidein-1.sbgrid.org" group="default" node="134.174.140.230:9620-9660" secondary="True"/>
    </collectors>
    <files>
      <file absfname="/storage/app/site/vofrontend/osg_glidein.sh" after_entry="True" const="True" executable="True" untar="False" wrapper="False">
